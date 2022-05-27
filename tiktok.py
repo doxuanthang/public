@@ -1,18 +1,23 @@
 import subprocess
 from time import sleep
 import sys
+
+
+def run_clear():
+    subprocess.run("clear", shell=True)
+
 try:
     from colorama import Fore, Back, Style
 except:
     subprocess.run("pip install colorama", shell=True)
-    subprocess.run("clear", shell=True)
+    run_clear()
     from colorama import Fore, Back, Style
 
 try:
     import requests
 except:
     subprocess.run("pip install requests", shell=True)
-    subprocess.run("clear", shell=True)
+    run_clear()
     import requests
 
 
@@ -21,7 +26,6 @@ class TiktokService:
 
     @classmethod
     def login(cls, username, password):
-        print(username, password)
         return requests.post(f"{cls.HOST}/api/login", json={
             "username": username,
             "password": password
@@ -100,7 +104,8 @@ class Tiktok:
                 if "token" in res:
                     # print(res)
                     self.token = res["token"]
-                    print(f"{Fore.GREEN}Đăng nhập tài khoản {username} thành công!")
+                    run_clear()
+                    print(f"Đăng nhập tài khoản {Fore.GREEN}{username}{Style.RESET_ALL} thành công!")
                     return
         except:
             pass
@@ -133,24 +138,27 @@ class Tiktok:
         res = TiktokService.get_accounts(self.token)
         accounts = res["data"]
         if len(accounts) == 0:
-            print("Không có tài khoản tiktok nào, vui lòng thêm tài khoản trên web traodoicheo")
+            print(f"{Fore.RED}Không có tài khoản tiktok nào, vui lòng thêm tài khoản trên web traodoicheo")
             return
         accounts = list(map(lambda acc: {"unique_id": acc["unique_id"], "unique_username": acc["unique_username"]}, accounts))
-        print("Xác nhận tài khoản tương tác:")
+        print(f"{Fore.YELLOW}Xác nhận tài khoản tương tác:")
         for idx, account in enumerate(accounts):
             print(f"\t{str(idx+1)}. {account['unique_username']} {account['unique_id']}")
         choose = int(input("Chọn: "))
         self.unique_id = accounts[choose-1]["unique_id"]
-        print(self.unique_id)
 
     def do_jobs(self):
-        res = TiktokService.get_jobs(self.token, self.unique_id)
-        jobs = res["data"]
-        for job in jobs:
-            job_id = job["id"]
-            subprocess.run(f"am start --user 0 -W {job['link']}", shell=True)
-            sleep(10)
-            TiktokService.complete(self.token, self.unique_id, job_id)
+        while True:
+            res = TiktokService.get_jobs(self.token, self.unique_id)
+            jobs = res["data"]
+            if len(jobs) == 0:
+                run_clear()
+                print(f"{Style.RESET_ALL}Vui lòng đợi 10s để tải job mới")
+                sleep(10)
+            for job in jobs:
+                job_id = job["id"]
+                subprocess.run(f"am start --user 0 -W {job['link']}", shell=True, stdout=subprocess.DEVNULL)
+                TiktokService.complete(self.token, self.unique_id, job_id)
 
     def run(self):
         self.choose_accounts()
@@ -159,6 +167,7 @@ class Tiktok:
 
 
 def main():
+    run_clear()
     try:
         tt = Tiktok()
         tt.login()
