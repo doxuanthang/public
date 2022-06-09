@@ -1,1 +1,1 @@
-//div/div[contains(@class,'bm_E')]
+//div[./div/div/h4]
