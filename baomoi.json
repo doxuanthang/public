@@ -1,0 +1,17 @@
+[
+  {
+    "post": "//div[./div/div/h3/a]",
+    "link": {
+      "xpath": ".//div/h3/a",
+      "attr": "href"
+    },
+    "title": {
+      "xpath": ".//div/h3/a",
+      "attr": "title"
+    },
+    "date": {
+      "xpath": ".//time",
+      "attr": "href"
+    }
+  }
+]
